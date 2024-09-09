@@ -74,12 +74,15 @@ THIRD_APPS = [
     "corsheaders",
 ]
 
+
 PROJECT_APPS = [
     #'apps.base',
     #'apps.myapp',
 ]
 
+
 INSTALLED_APPS = DJANGO_APPS + THIRD_APPS + PROJECT_APPS
+
 
 
 MIDDLEWARE = [
@@ -91,6 +94,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+	'requestlogs.middleware.RequestLogsMiddleware', # Logs
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -128,7 +132,6 @@ DATABASES = {
 	}
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -147,6 +150,34 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+REST_FRAMEWORK={
+    'EXCEPTION_HANDLER': 'requestlogs.views.exception_handler',
+}
+
+# Logs
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'requestlogs_to_file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'info.log',
+        },
+    },
+    'loggers': {
+        'requestlogs': {
+            'handlers': ['requestlogs_to_file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+
+REQUESTLOGS = {
+    'SECRETS': ['password', 'token'],
+    'METHODS': ('PUT', 'PATCH', 'POST', 'DELETE'),
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
