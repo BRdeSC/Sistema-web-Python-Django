@@ -11,12 +11,21 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 import os
+import sys
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEMPLATE_DIR = os.path.join(BASE_DIR,'templates')
 STATIC_DIR=os.path.join(BASE_DIR,'static')
 
+# Adicionar essa tag para que nosso projeto encontre o .env
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+
+
+# Diz para Django onde estão nossos aplicativos
+APPS_DIR = str(os.path.join(BASE_DIR,'apps'))
+sys.path.insert(0, APPS_DIR)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -25,14 +34,34 @@ STATIC_DIR=os.path.join(BASE_DIR,'static')
 SECRET_KEY = 'django-insecure-+t%$kni16j3#bint0dw(@z+b5-%)3fmrbt4r^pcr!456+)tza$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost', 
+	'127.0.0.1', 
+]
 
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'X-Register',
+]
+
+# CORS Config
+CORS_ORIGIN_ALLOW_ALL = True  
+# CORS_ORIGIN_ALLOW_ALL como True, o que permite que qualquer site acesse seus recursos.
+# Defina como False e adicione o site no CORS_ORIGIN_WHITELIST onde somente o site da lista acesse os seus recursos.
+CORS_ALLOW_CREDENTIALS = False 
+CORS_ORIGIN_WHITELIST = ['http://meusite.com',] # Lista.
+
+
+if not DEBUG:
+	SECURE_SSL_REDIRECT = True
+	ADMINS = [(os.getenv('SUPER_USER'), os.getenv('EMAIL'))]
+	SESSION_COOKIE_SECURE = True
+	CSRF_COOKIE_SECURE = True 
 
 # Application definition
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,9 +70,22 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+THIRD_APPS = [
+    "corsheaders",
+]
+
+PROJECT_APPS = [
+    #'apps.base',
+    #'apps.myapp',
+]
+
+INSTALLED_APPS = DJANGO_APPS + THIRD_APPS + PROJECT_APPS
+
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # Cors
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -76,10 +118,14 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'), 
-    }
+  'default': {
+      'ENGINE': 'django.db.backends.sqlite3',
+      'NAME': os.path.join(BASE_DIR, os.getenv('NAME_DB')),
+			#'USER':os.getenv('USER_DB')
+			#'PASSWORD': os.getenv('PASSWORD_DB')
+			#'HOST':os.getenv('HOST_DB')
+			#'PORT':os.getenv('PORT_DB')
+	}
 }
 
 
